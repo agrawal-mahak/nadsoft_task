@@ -80,7 +80,7 @@ const AddMemberModal = ({ show, handleClose, handleSubmit, member, add }) => {
             </Form.Group>
             <div className="d-flex justify-content-center mt-3">
               <Button variant="success" type="submit">
-                {add ? "Add Member" : "Update Member"}
+                {add ? "Submit" : "Update"}
               </Button>
             </div>
           </Form>
