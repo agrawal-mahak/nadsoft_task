@@ -218,21 +218,26 @@ const App = () => {
   const [data, setData] = useState([]);
   const [addMode, setAddMode] = useState(true);
   const [toast, setToast] = useState({ show: false, message: "", variant: "" });
-  
+  const [showModalAdd, setShowModalAdd] = useState({ show: false });
+  const [showModalEdit, setShowModalEdit] = useState({ show: false, id: '' });
+
   const handleCloseModal = () => {
     setShowModal(false);
     setCurrentMember(null);
+    setShowModalAdd({ show: false });
   };
 
   const handleShowCreateModal = () => {
     setAddMode(true); // Add mode
     setShowModal(true);
+    setShowModalAdd({ show: true });
   };
 
   const handleShowEditModal = (member) => {
     setAddMode(false); // Edit mode
     setCurrentMember(member);
     setShowModal(true);
+    setShowModalEdit({ show: true, id: member._id });
   };
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
@@ -257,61 +262,6 @@ const App = () => {
 
     }
   };
-
-  // const handleCreateOrUpdateMember = async (event, updatedMember) => {
-  //   event.preventDefault();
-
-  //   if (addMode) {
-  //     // Add new member
-  //     try {
-  //       const response = await fetch(
-  //         "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(updatedMember),
-  //         }
-  //       );
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-
-  //       const newMember = await response.json();
-  //       setData([...data, newMember]);
-  //       setShowModal(false);
-  //     } catch (error) {
-  //       console.error("Error adding member:", error.message);
-  //     }
-  //   } else {
-  //     // Update existing member
-  //     try {
-  //       const response = await fetch(
-  //         `https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member/${currentMember._id}`,
-  //         {
-  //           method: "PUT",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(updatedMember),
-  //         }
-  //       );
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-
-  //       setData(
-  //         data.map((member) =>
-  //           member._id === currentMember._id
-  //             ? { ...updatedMember, _id: currentMember._id }
-  //             : member
-  //         )
-  //       );
-  //       setShowModal(false);
-  //     } catch (error) {
-  //       console.error("Error updating member:", error.message);
-  //     }
-  //   }
-  // };
 
   const handleCreateOrUpdateMember = async (event, memberData) => {
     event.preventDefault();
@@ -344,6 +294,8 @@ const App = () => {
         }
   
        setToast({ show: true, message: "Member updated successfully!", variant: "success" });
+       handleCloseModal(); 
+      handleFetchData(); // Fetch updated list of members
       } else {
         // Create new member using POST
         const response = await fetch(
@@ -366,7 +318,9 @@ const App = () => {
         setToast({ show: true, message: "Member added successfully!", variant: "success" });
       }
   
-      handleCloseModal(); // Close the modal after successful submission
+      handleCloseModal();
+      handleFetchData();
+      
     } catch (error) {
       console.error("Error:", error.message);
       setToast({ show: true, message: `Error: ${error.message}`, variant: "danger" });
@@ -374,26 +328,46 @@ const App = () => {
   };
   
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member"
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error("Error fetching data:", error.message);
-        setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger" });
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member"
+  //       );
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       const result = await response.json();
+  //       setData(result);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error.message);
+  //       setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger" });
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+  const handleFetchData = async () => {
+    try {
+      const response = await fetch(
+        "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member"
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    };
-
-    fetchData();
+      const result = await response.json();
+      setData(result); // Update the state with fetched data
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+      setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger" });
+    }
+  };
+  
+  useEffect(() => {
+    handleFetchData(); // Fetch data on initial render
   }, []);
-
+  
   return (
     <div className="container mt-5">
       <h3>All Members</h3>
@@ -436,6 +410,7 @@ const App = () => {
                 <BiEdit
                   size={20}
                   className="text-primary ms-3"
+                  // onClick={() => handleShowEditModal(member)}
                   onClick={() => handleShowEditModal(member)}
                 />
               </td>
@@ -444,23 +419,27 @@ const App = () => {
         </tbody>
       </Table>
 
-      {/* Create Member Modal */}
-      <AddMemberModal
-        show={showModal}
-        handleClose={handleCloseModal}
-        handleSubmit={handleCreateOrUpdateMember}
-        member={null}
-        add={true}
-      />
+      {/* Add Member Modal */}
+      {!!showModalAdd.show && (
+        <AddMemberModal
+          show={showModalAdd.show}
+          handleClose={() => setShowModalAdd({ show: false })}
+          handleSubmit={handleCreateOrUpdateMember} 
+          member={null}
+          add={true}
+        />
+      )}
 
       {/* Edit Member Modal */}
-      <AddMemberModal
-        show={showModal}
-        handleClose={handleCloseModal}
-        handleSubmit={handleCreateOrUpdateMember}
-        member={currentMember}
-        add={false}
-      />
+      {!!showModalEdit.show && (
+        <AddMemberModal
+          show={showModalEdit.show}
+          handleClose={() => setShowModalEdit({ show: false, id: '' })}
+          handleSubmit= {handleCreateOrUpdateMember} 
+          member={data.find((member) => member._id === showModalEdit.id)}
+          add={false}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
