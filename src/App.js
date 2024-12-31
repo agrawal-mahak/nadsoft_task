@@ -1,206 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { Button, Table, Toast } from "react-bootstrap";
-// import { FaTrash } from "react-icons/fa";
-// import AddMemberModal from "./components/AddMemberModal";
-// import "bootstrap/dist/css/bootstrap.min.css";
-// import "font-awesome/css/font-awesome.min.css";
-// import DeleteConfirmationModal from "./components/DeleteConfirmModal";
-// import { BiEdit } from "react-icons/bi";
-
-// const App = () => {
-//   const [showCreateModal, setShowCreateModal] = useState(false);
-//   const [showDeleteModal, setShowDeleteModal] = useState(false);
-//   const [currentMember, setCurrentMember] = useState(null);
-//   const [members, setMembers] = useState([
-//     {
-//       id: 24,
-//       name: "Qa Nadsoft",
-//       email: "qa+upl-test-client-4@nadsoftdev.com",
-//       age: 28,
-//     },
-//     {
-//       id: 23,
-//       name: "Qa Nadsoft",
-//       email: "qa+upl-test-client-3@nadsoftdev.com",
-//       age: 32,
-//     },
-//     { id: 15, name: "qa test", email: "qa+ertg@nadsoftdev.com", age: 36 },
-//     { id: 4, name: "ts vb", email: "qa+721@nadsoftdev.com", age: 30 },
-//   ]);
-
-//   const [loading, setLoading] = useState(true); // State to manage loading state
-//   const [data, setData] = useState([]);
-
-//   const handleCloseCreateModal = () =>{
-//     setShowCreateModal(false);
-//     setCurrentMember(null);
-//   }
-
-//   const handleShowCreateModal = () => setShowCreateModal(true);
-
-//   const handleShowEditModal = (member) => {
-//     setCurrentMember(member); // Set the selected member as the current member
-//     setShowCreateModal(true); // Open the modal
-//   };
-
-//   const handleCloseDeleteModal = () => setShowDeleteModal(false);
-//   const handleShowDeleteModal = (member) => {
-//     setCurrentMember(member);
-//     setShowDeleteModal(true);
-//   };
-
-//   const handleDeleteMember = () => {
-//     setMembers(members.filter((member) => member.id !== currentMember.id));
-//     setShowDeleteModal(false);
-//   };
-
-//   const handleCreateMember = (event) => {
-//     event.preventDefault();
-//     const form = event.target;
-//     const updatedMember = {
-//       id: currentMember ? currentMember.id : Math.floor(Math.random() * 1000),
-//       name: form.name.value,
-//       email: form.email.value,
-//       age: form.age.value,
-//     };
-
-//     if (currentMember) {
-//       // Update existing member
-//       setData(
-//         data.map((member) =>
-//           member.id === currentMember.id ? updatedMember : member
-//         )
-//       );
-//     } else {
-//       // Add new member
-//       setData([...data, updatedMember]);
-//     }
-
-//     setShowCreateModal(false);
-//     setCurrentMember(null); // Reset current member after submission
-//   };
-
-// useEffect(() => {
-//         const fetchData = async () => {
-//             try {
-//                 const response = await fetch('https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member');
-//                 if (!response.ok) {
-//                     throw new Error(`HTTP error! Status: ${response.status}`);
-//                 }
-//                 const result = await response.json();
-//                 setData(result);
-//             } catch (error) {
-//                 Toast.error(`Error fetching data: ${error.message}`);
-//             } finally {
-//                 setLoading(false);
-//             }
-//         };
-
-//         fetchData();
-//     }, []);
-
-//     console.log(data,'data');
-//   return (
-//     <div className="container mt-5">
-//       <h3>All Members</h3>
-//       <div className="d-flex justify-content-between mb-3">
-//         <div className="d-flex flex-grow-2">
-//           <input type="text" className="form-control" placeholder="QA" />
-//         </div>
-//         <Button
-//           variant="success"
-//           onClick={handleShowCreateModal}
-//           className="ms-5"
-//         >
-//           Add New Member
-//         </Button>
-//       </div>
-
-//       <Table striped bordered hover>
-//         <thead>
-//           <tr>
-//             <th className="col-1">Id</th>
-//             <th className="col-2">Member Name</th>
-//             <th className="col-6">Member Email</th>
-//             <th className="col-1">Age</th>
-//             <th className="col-1">Action</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {data.map((member) => (
-//             <tr key={member._id}>
-//               <td>{member._id}</td>
-//               <td>{member.name}</td>
-//               <td>{member.email}</td>
-//               <td>{member.age}</td>
-//               <td className="ps-3">
-//                 <FaTrash
-//                   variant="danger"
-//                   style={{ color: "#d90707" }}
-//                   onClick={() => handleShowDeleteModal(member)} // Open delete modal for this member
-//                 />
-//               <BiEdit size={20} className="text-primary ms-3"
-//                  onClick={() => handleShowEditModal(member)}
-//               />
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </Table>
-
-//       {/* Pagination */}
-//       <div className="d-flex justify-content-between">
-//         <div>Show 10 entries</div>
-//         <nav>
-//           <ul className="pagination">
-//             <li className="page-item">
-//               <button className="page-link">First</button>
-//             </li>
-//             <li className="page-item">
-//               <button className="page-link">Previous</button>
-//             </li>
-//             <li className="page-item active">
-//               <button className="page-link btn-success">1</button>
-//             </li>
-//             <li className="page-item">
-//               <button className="page-link">Next</button>
-//             </li>
-//             <li className="page-item">
-//               <button className="page-link">Last</button>
-//             </li>
-//           </ul>
-//         </nav>
-//       </div>
-
-//       {/* Create Member Modal */}
-//       <AddMemberModal
-//         show={showCreateModal}
-//         handleClose={handleCloseCreateModal}
-//         handleCreateMember={handleCreateMember}
-//         member={currentMember} // Pass current member to modal
-//         add={true}
-//       />
-
-//       {/* Edit member modal */}
-//       <AddMemberModal
-//         show={showCreateModal}
-//         handleClose={handleCloseCreateModal}
-//         handleCreateMember={handleCreateMember}
-//         member={currentMember} // Pass current member to modal
-//       />
-
-//       {/* Delete Member Modal */}
-//       <DeleteConfirmationModal
-//         show={showDeleteModal}
-//         handleClose={handleCloseDeleteModal}
-//         handleDeleteMember={handleDeleteMember}
-//       />
-//     </div>
-//   );
-// };
-
-// export default App;
-
 import React, { useEffect, useState } from "react";
 import { Button, Table, Toast } from "react-bootstrap";
 import { FaTrash } from "react-icons/fa";
@@ -224,6 +21,10 @@ const App = () => {
    });
   const [showModalAdd, setShowModalAdd] = useState({ show: false });
   const [showModalEdit, setShowModalEdit] = useState({ show: false, id: '' });
+
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [itemsPerPage] = useState(10);
+  const [paginatedData, setPaginatedData] = useState([]); 
 
   const handleCloseModal = () => {
     setCurrentMember(null);
@@ -325,8 +126,6 @@ const App = () => {
       setToast({ show: true, message: `Error: ${error.message}`, variant: "danger", color: "white", });
     }
   };
-  
-
 
   const handleFetchData = async () => {
     try {
@@ -343,11 +142,24 @@ const App = () => {
       setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger", color: "white", });
     }
   };
+
+  // pagination
+    useEffect(() => {
+      const indexOfLastItem = currentPage * itemsPerPage;
+      const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+      setPaginatedData(data.slice(indexOfFirstItem, indexOfLastItem));
+    }, [data, currentPage, itemsPerPage]);
+
+    const handlePageChange = (pageNumber) => {
+      setCurrentPage(pageNumber);
+    };
+
+    useEffect(() => {
+      handleFetchData(); 
+    }, []);
   
-  useEffect(() => {
-    handleFetchData(); // Fetch data on initial render
-  }, []);
-  
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+
   return (
     <div className="container mt-5">
       <h3>All Members</h3>
@@ -375,7 +187,7 @@ const App = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((member) => (
+          {paginatedData.map((member) => (
             <tr key={member._id}>
               <td>{member._id}</td>
               <td>{member.name}</td>
@@ -390,7 +202,6 @@ const App = () => {
                 <BiEdit
                   size={20}
                   className="text-primary ms-3"
-                  // onClick={() => handleShowEditModal(member)}
                   onClick={() => handleShowEditModal(member)}
                 />
               </td>
@@ -400,24 +211,68 @@ const App = () => {
       </Table>
 
       {/* Pagination */}
-      <div className="d-flex justify-content-between">
-        <div>Show 10 entries</div>
+      <div className="d-flex justify-content-between align-items-center mt-4">
+        <div>Showing {itemsPerPage} entries per page</div>
         <nav>
           <ul className="pagination">
-            <li className="page-item">
-              <button className="page-link">First</button>
+            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </button>
             </li>
-            <li className="page-item">
-              <button className="page-link">Previous</button>
+            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
             </li>
-            <li className="page-item active">
-              <button className="page-link btn-success">1</button>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <li
+                key={index + 1}
+                className={`page-item ${
+                  currentPage === index + 1 && "active"
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+            <li
+              className={`page-item ${
+                currentPage === totalPages && "disabled"
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
             </li>
-            <li className="page-item">
-              <button className="page-link">Next</button>
-            </li>
-            <li className="page-item">
-              <button className="page-link">Last</button>
+            <li
+              className={`page-item ${
+                currentPage === totalPages && "disabled"
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </button>
             </li>
           </ul>
         </nav>
