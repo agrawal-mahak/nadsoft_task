@@ -26,6 +26,8 @@ const App = () => {
   const [itemsPerPage] = useState(10);
   const [paginatedData, setPaginatedData] = useState([]); 
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const handleCloseModal = () => {
     setCurrentMember(null);
     setShowModalAdd({ show: false });
@@ -143,12 +145,25 @@ const App = () => {
     }
   };
 
+   // search
+   const handleSearch = (event) => {
+    setSearchTerm(event.target.value); // Update search term
+  };
+
+  const filteredData = data.filter(
+    (member) =>
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.age.toString().includes(searchTerm) ||
+      member._id.includes(searchTerm)
+  );
+
   // pagination
     useEffect(() => {
       const indexOfLastItem = currentPage * itemsPerPage;
       const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-      setPaginatedData(data.slice(indexOfFirstItem, indexOfLastItem));
-    }, [data, currentPage, itemsPerPage]);
+      setPaginatedData(filteredData.slice(indexOfFirstItem, indexOfLastItem));
+    }, [filteredData, currentPage, itemsPerPage]);
 
     const handlePageChange = (pageNumber) => {
       setCurrentPage(pageNumber);
@@ -158,14 +173,19 @@ const App = () => {
       handleFetchData(); 
     }, []);
   
-    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
     <div className="container mt-5">
       <h3>All Members</h3>
       <div className="d-flex justify-content-between mb-3">
         <div className="d-flex flex-grow-2">
-          <input type="text" className="form-control" placeholder="Search" />
+          <input 
+          type="text" 
+          className="form-control" 
+          placeholder="QA"
+          value={searchTerm}
+          onChange={handleSearch} />
         </div>
         <Button
           variant="success"
