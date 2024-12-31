@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Toast } from "react-bootstrap";
+import { Button, Toast } from "react-bootstrap";
 import { FaTrash } from "react-icons/fa";
 import AddMemberModal from "./components/AddMemberModal";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -7,6 +7,7 @@ import "font-awesome/css/font-awesome.min.css";
 import DeleteConfirmationModal from "./components/DeleteConfirmModal";
 import { BiEdit } from "react-icons/bi";
 import { addMember, deleteMember, fetchMembers, updateMember } from "./api";
+import DataTable from "react-data-table-component";
 
 const App = () => {
   const [data, setData] = useState([]);
@@ -25,6 +26,54 @@ const App = () => {
   const [paginatedData, setPaginatedData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const columns = [
+    {
+      name: "Id",
+      selector: (row) => row._id,
+      sortable: true,
+      width: "20%",
+    },
+    {
+      name: "Member Name",
+      selector: (row) => row.name,
+      sortable: true,
+      width: "15%",
+    },
+    {
+      name: "Member Email",
+      selector: (row) => row.email,
+      sortable: true,
+      width: "45%",
+    },
+    {
+      name: "Age",
+      selector: (row) => row.age,
+      sortable: true,
+      width: "10%",
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <div className="action-icons">
+          {/* Delete Icon */}
+          <FaTrash
+            style={{ color: "#d90707", cursor: "pointer", marginRight: "10px" }}
+            onClick={() => handleShowDeleteModal(row)}
+            title="Delete Member"
+          />
+          {/* Edit Icon */}
+          <BiEdit
+            size={20}
+            style={{ color: "blue", cursor: "pointer" }}
+            onClick={() => handleShowEditModal(row)}
+            title="Edit Member"
+          />
+        </div>
+      ),
+      width: "15%",
+    },
+  ];
+
   const handleFetchData = async () => {
     try {
       const result = await fetchMembers();
@@ -42,7 +91,7 @@ const App = () => {
 
   const handleCreateOrUpdateMember = async (event, memberData) => {
     event.preventDefault();
-  
+
     const form = event.target;
     const updatedMember = {
       name: form.name.value,
@@ -50,7 +99,7 @@ const App = () => {
       age: form.age.value,
       parentId: form.parentId.value,
     };
-  
+
     try {
       if (memberData && memberData._id) {
         // Update existing member
@@ -93,7 +142,7 @@ const App = () => {
       });
     }
   };
-  
+
   const handleDeleteMember = async () => {
     try {
       await deleteMember(currentMember._id);
@@ -190,43 +239,38 @@ const App = () => {
         </Button>
       </div>
 
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th className="col-1">Id</th>
-            <th className="col-2">Member Name</th>
-            <th className="col-6">Member Email</th>
-            <th className="col-1">Age</th>
-            <th className="col-1">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedData.map((member) => (
-            <tr key={member._id}>
-              <td>{member._id}</td>
-              <td>{member.name}</td>
-              <td>{member.email}</td>
-              <td>{member.age}</td>
-              <td className="ps-3">
-                <FaTrash
-                  variant="danger"
-                  style={{ color: "#d90707" }}
-                  onClick={() => handleShowDeleteModal(member)}
-                />
-                <BiEdit
-                  size={20}
-                  className="text-primary ms-3"
-                  onClick={() => handleShowEditModal(member)}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <DataTable
+        title="Members List"
+        columns={columns}
+        data={paginatedData}
+        highlightOnHover
+        striped
+        responsive
+        customStyles={{
+          table: {
+            style: {
+              border: "1px solid #ddd", // Add border around the table
+              overflowX: "hidden",
+            },
+          },
+          rows: {
+            style: {
+              fontSize: "16px", // Adjust the font size for rows
+            },
+          },
+          headCells: {
+            style: {
+              fontWeight: "bold", // Make the font bold
+              fontSize: "16px", // Optional: Adjust font size
+            },
+          },
+        }}
+      />
+    
 
       {/* Pagination */}
       <div className="d-flex justify-content-between align-items-center mt-4">
-        <div>Showing {itemsPerPage} entries per page</div>
+        <div>Showing {itemsPerPage} entries</div>
         <nav>
           <ul className="pagination">
             <li className={`page-item ${currentPage === 1 && "disabled"}`}>
