@@ -5,9 +5,14 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "cra-template": "1.2.0",
+    "font-awesome": "^4.7.0",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.7",
     "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^5.4.0",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.0.2",
     "web-vitals": "^4.2.4"
   },
   "scripts": {
