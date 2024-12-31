@@ -212,31 +212,31 @@ import { BiEdit } from "react-icons/bi";
 
 
 const App = () => {
-  const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentMember, setCurrentMember] = useState(null);
   const [data, setData] = useState([]);
-  const [addMode, setAddMode] = useState(true);
-  const [toast, setToast] = useState({ show: false, message: "", variant: "" });
+  
+  const [toast, setToast] = useState({
+     show: false,
+      message: "", 
+      variant: "",
+      color: "",
+   });
   const [showModalAdd, setShowModalAdd] = useState({ show: false });
   const [showModalEdit, setShowModalEdit] = useState({ show: false, id: '' });
 
   const handleCloseModal = () => {
-    setShowModal(false);
     setCurrentMember(null);
     setShowModalAdd({ show: false });
+    setShowModalEdit({show: false});
   };
 
   const handleShowCreateModal = () => {
-    setAddMode(true); // Add mode
-    setShowModal(true);
     setShowModalAdd({ show: true });
   };
 
   const handleShowEditModal = (member) => {
-    setAddMode(false); // Edit mode
     setCurrentMember(member);
-    setShowModal(true);
     setShowModalEdit({ show: true, id: member._id });
   };
 
@@ -250,16 +250,15 @@ const App = () => {
   const handleDeleteMember = async () => {
     try {
       await fetch(
-        `https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member/${currentMember._id}`,
+        `https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member/${currentMember._id}`,
         { method: "DELETE" }
       );
       setData(data.filter((member) => member._id !== currentMember._id));
-      setToast({ show: true, message: "Member deleted successfully!", variant: "success" });
+      setToast({ show: true, message: "Member deleted successfully!", variant: "success",  color: "white", });
       setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting member:", error.message);
-      setToast({ show: true, message: `Error deleting member: ${error.message}`, variant: "danger" });
-
+      setToast({ show: true, message: `Error deleting member: ${error.message}`, variant: "danger",  color: "white", });
     }
   };
 
@@ -279,7 +278,7 @@ const App = () => {
       if (memberData && memberData._id) {
         // Update existing member using PUT
         const response = await fetch(
-          `https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member/${memberData._id}`,
+          `https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member/${memberData._id}`,
           {
             method: "PUT",
             headers: {
@@ -293,13 +292,13 @@ const App = () => {
           throw new Error(`Failed to update member. Status: ${response.status}`);
         }
   
-       setToast({ show: true, message: "Member updated successfully!", variant: "success" });
+       setToast({ show: true, message: "Member updated successfully!", variant: "success", color: "white", });
        handleCloseModal(); 
       handleFetchData(); // Fetch updated list of members
       } else {
         // Create new member using POST
         const response = await fetch(
-          "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member",
+          "https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member",
           {
             method: "POST",
             headers: {
@@ -315,7 +314,7 @@ const App = () => {
   
         const newMember = await response.json();
         setData((prevData) => [...prevData, newMember]); // Update the state with the new member
-        setToast({ show: true, message: "Member added successfully!", variant: "success" });
+        setToast({ show: true, message: "Member added successfully!", variant: "success",  color: "white", });
       }
   
       handleCloseModal();
@@ -323,35 +322,16 @@ const App = () => {
       
     } catch (error) {
       console.error("Error:", error.message);
-      setToast({ show: true, message: `Error: ${error.message}`, variant: "danger" });
+      setToast({ show: true, message: `Error: ${error.message}`, variant: "danger", color: "white", });
     }
   };
   
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member"
-  //       );
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-  //       const result = await response.json();
-  //       setData(result);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error.message);
-  //       setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger" });
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
 
   const handleFetchData = async () => {
     try {
       const response = await fetch(
-        "https://crudcrud.com/api/18f25c85d7b2449284b425b051c4d594/member"
+         "https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member"
       );
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -360,7 +340,7 @@ const App = () => {
       setData(result); // Update the state with fetched data
     } catch (error) {
       console.error("Error fetching data:", error.message);
-      setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger" });
+      setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger", color: "white", });
     }
   };
   
@@ -419,6 +399,31 @@ const App = () => {
         </tbody>
       </Table>
 
+      {/* Pagination */}
+      <div className="d-flex justify-content-between">
+        <div>Show 10 entries</div>
+        <nav>
+          <ul className="pagination">
+            <li className="page-item">
+              <button className="page-link">First</button>
+            </li>
+            <li className="page-item">
+              <button className="page-link">Previous</button>
+            </li>
+            <li className="page-item active">
+              <button className="page-link btn-success">1</button>
+            </li>
+            <li className="page-item">
+              <button className="page-link">Next</button>
+            </li>
+            <li className="page-item">
+              <button className="page-link">Last</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+
       {/* Add Member Modal */}
       {!!showModalAdd.show && (
         <AddMemberModal
@@ -457,7 +462,7 @@ const App = () => {
         bg={toast.variant}
         className="position-fixed bottom-0 end-0 m-3"
       >
-        <Toast.Body>{toast.message}</Toast.Body>
+        <Toast.Body  style={{ color: toast.color, fontWeight: "bold" }}>{toast.message}</Toast.Body>
       </Toast>
     </div>
   );
