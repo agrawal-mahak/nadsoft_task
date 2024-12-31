@@ -2,25 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { fetchMemberById } from "../api";
 
 const AddMemberModal = ({ show, handleClose, handleSubmit, member, add }) => {
   const [memberData, setMemberData] = useState(null); // State to store API response
 
   useEffect(() => {
     const fetchMemberData = async () => {
-      if (!add && member && member._id) { // Fetch only in edit mode
+      if (!add && member && member._id) {
         try {
-          const response = await fetch(
-            `https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member/${member._id}`
-          );
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-
-          const result = await response.json();
-          console.log("Fetched Member Data:", result);
-          setMemberData(result); // Store the fetched member data
+          const result = await fetchMemberById(member._id); // Use the API function
+          setMemberData(result);
         } catch (error) {
           console.error("Error fetching member data:", error.message);
           toast.error(`Error fetching member data: ${error.message}`);
@@ -32,8 +24,6 @@ const AddMemberModal = ({ show, handleClose, handleSubmit, member, add }) => {
 
     fetchMemberData();
   }, [member, add]);
-  console.log(add,'value of add');
-
   return (
     <>
       <ToastContainer position="bottom-right" autoClose={3000} />

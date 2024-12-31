@@ -6,32 +6,150 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import DeleteConfirmationModal from "./components/DeleteConfirmModal";
 import { BiEdit } from "react-icons/bi";
-
+import { addMember, deleteMember, fetchMembers, updateMember } from "./api";
 
 const App = () => {
+  const [data, setData] = useState([]);
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    variant: "",
+    color: "",
+  });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentMember, setCurrentMember] = useState(null);
-  const [data, setData] = useState([]);
-  
-  const [toast, setToast] = useState({
-     show: false,
-      message: "", 
-      variant: "",
-      color: "",
-   });
   const [showModalAdd, setShowModalAdd] = useState({ show: false });
-  const [showModalEdit, setShowModalEdit] = useState({ show: false, id: '' });
-
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [showModalEdit, setShowModalEdit] = useState({ show: false, id: "" });
+  const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [paginatedData, setPaginatedData] = useState([]); 
-
+  const [paginatedData, setPaginatedData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const handleFetchData = async () => {
+    try {
+      const result = await fetchMembers();
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+      setToast({
+        show: true,
+        message: `Error fetching data: ${error.message}`,
+        variant: "danger",
+        color: "white",
+      });
+    }
+  };
+
+  const handleCreateOrUpdateMember = async (event, memberData) => {
+    event.preventDefault();
+  
+    const form = event.target;
+    const updatedMember = {
+      name: form.name.value,
+      email: form.email.value,
+      age: form.age.value,
+      parentId: form.parentId.value,
+    };
+  
+    try {
+      if (memberData && memberData._id) {
+        // Update existing member
+        const response = await updateMember(memberData._id, updatedMember);
+        if (response) {
+          setToast({
+            show: true,
+            message: "Member updated successfully with a response!",
+            variant: "success",
+            color: "white",
+          });
+        } else {
+          setToast({
+            show: true,
+            message: "Member updated successfully!",
+            variant: "success",
+            color: "white",
+          });
+        }
+      } else {
+        // Add new member
+        const newMember = await addMember(updatedMember);
+        setData((prevData) => [...prevData, newMember]);
+        setToast({
+          show: true,
+          message: "Member added successfully!",
+          variant: "success",
+          color: "white",
+        });
+      }
+      handleCloseModal();
+      handleFetchData();
+    } catch (error) {
+      console.error("Error:", error.message);
+      setToast({
+        show: true,
+        message: `Error: ${error.message}`,
+        variant: "danger",
+        color: "white",
+      });
+    }
+  };
+  
+  const handleDeleteMember = async () => {
+    try {
+      await deleteMember(currentMember._id);
+      setToast({
+        show: true,
+        message: "Member deleted successfully!",
+        variant: "success",
+        color: "white",
+      });
+      setShowDeleteModal(false);
+      handleFetchData();
+    } catch (error) {
+      console.error("Error deleting member:", error.message);
+      setToast({
+        show: true,
+        message: `Error deleting member: ${error.message}`,
+        variant: "danger",
+        color: "white",
+      });
+    }
+  };
+
+  useEffect(() => {
+    handleFetchData();
+  }, []);
+
+  //------------------------------- -------search
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value); // Update search term
+  };
+
+  const filteredData = data.filter(
+    (member) =>
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.age.toString().includes(searchTerm) ||
+      member._id.includes(searchTerm)
+  );
+
+  // ---------------------------------------pagination
+  useEffect(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    setPaginatedData(filteredData.slice(indexOfFirstItem, indexOfLastItem));
+  }, [filteredData, currentPage, itemsPerPage]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const handleCloseModal = () => {
     setCurrentMember(null);
     setShowModalAdd({ show: false });
-    setShowModalEdit({show: false});
+    setShowModalEdit({ show: false });
   };
 
   const handleShowCreateModal = () => {
@@ -50,142 +168,18 @@ const App = () => {
     setShowDeleteModal(true);
   };
 
-  const handleDeleteMember = async () => {
-    try {
-      await fetch(
-        `https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member/${currentMember._id}`,
-        { method: "DELETE" }
-      );
-      setData(data.filter((member) => member._id !== currentMember._id));
-      setToast({ show: true, message: "Member deleted successfully!", variant: "success",  color: "white", });
-      setShowDeleteModal(false);
-    } catch (error) {
-      console.error("Error deleting member:", error.message);
-      setToast({ show: true, message: `Error deleting member: ${error.message}`, variant: "danger",  color: "white", });
-    }
-  };
-
-  const handleCreateOrUpdateMember = async (event, memberData) => {
-    event.preventDefault();
-  
-    // Prepare the updated member data from the form
-    const form = event.target;
-    const updatedMember = {
-      name: form.name.value,
-      email: form.email.value,
-      age: form.age.value,
-      parentId: form.parentId.value,
-    };
-  
-    try {
-      if (memberData && memberData._id) {
-        // Update existing member using PUT
-        const response = await fetch(
-          `https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member/${memberData._id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedMember),
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error(`Failed to update member. Status: ${response.status}`);
-        }
-  
-       setToast({ show: true, message: "Member updated successfully!", variant: "success", color: "white", });
-       handleCloseModal(); 
-      handleFetchData(); // Fetch updated list of members
-      } else {
-        // Create new member using POST
-        const response = await fetch(
-          "https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedMember),
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error(`Failed to create member. Status: ${response.status}`);
-        }
-  
-        const newMember = await response.json();
-        setData((prevData) => [...prevData, newMember]); // Update the state with the new member
-        setToast({ show: true, message: "Member added successfully!", variant: "success",  color: "white", });
-      }
-  
-      handleCloseModal();
-      handleFetchData();
-      
-    } catch (error) {
-      console.error("Error:", error.message);
-      setToast({ show: true, message: `Error: ${error.message}`, variant: "danger", color: "white", });
-    }
-  };
-
-  const handleFetchData = async () => {
-    try {
-      const response = await fetch(
-         "https://crudcrud.com/api/536cb28226444df9b32c64c91d01a23a/member"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const result = await response.json();
-      setData(result); // Update the state with fetched data
-    } catch (error) {
-      console.error("Error fetching data:", error.message);
-      setToast({ show: true, message: `Error fetching data: ${error.message}`, variant: "danger", color: "white", });
-    }
-  };
-
-   // search
-   const handleSearch = (event) => {
-    setSearchTerm(event.target.value); // Update search term
-  };
-
-  const filteredData = data.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.age.toString().includes(searchTerm) ||
-      member._id.includes(searchTerm)
-  );
-
-  // pagination
-    useEffect(() => {
-      const indexOfLastItem = currentPage * itemsPerPage;
-      const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-      setPaginatedData(filteredData.slice(indexOfFirstItem, indexOfLastItem));
-    }, [filteredData, currentPage, itemsPerPage]);
-
-    const handlePageChange = (pageNumber) => {
-      setCurrentPage(pageNumber);
-    };
-
-    useEffect(() => {
-      handleFetchData(); 
-    }, []);
-  
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
   return (
     <div className="container mt-5">
       <h3>All Members</h3>
       <div className="d-flex justify-content-between mb-3">
         <div className="d-flex flex-grow-2">
-          <input 
-          type="text" 
-          className="form-control" 
-          placeholder="QA"
-          value={searchTerm}
-          onChange={handleSearch} />
+          <input
+            type="text"
+            className="form-control"
+            placeholder="QA"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
         <Button
           variant="success"
@@ -256,9 +250,7 @@ const App = () => {
             {Array.from({ length: totalPages }, (_, index) => (
               <li
                 key={index + 1}
-                className={`page-item ${
-                  currentPage === index + 1 && "active"
-                }`}
+                className={`page-item ${currentPage === index + 1 && "active"}`}
               >
                 <button
                   className="page-link"
@@ -298,13 +290,12 @@ const App = () => {
         </nav>
       </div>
 
-
       {/* Add Member Modal */}
       {!!showModalAdd.show && (
         <AddMemberModal
           show={showModalAdd.show}
           handleClose={() => setShowModalAdd({ show: false })}
-          handleSubmit={handleCreateOrUpdateMember} 
+          handleSubmit={handleCreateOrUpdateMember}
           member={null}
           add={true}
         />
@@ -314,8 +305,8 @@ const App = () => {
       {!!showModalEdit.show && (
         <AddMemberModal
           show={showModalEdit.show}
-          handleClose={() => setShowModalEdit({ show: false, id: '' })}
-          handleSubmit= {handleCreateOrUpdateMember} 
+          handleClose={() => setShowModalEdit({ show: false, id: "" })}
+          handleSubmit={handleCreateOrUpdateMember}
           member={data.find((member) => member._id === showModalEdit.id)}
           add={false}
         />
@@ -328,8 +319,8 @@ const App = () => {
         handleDeleteMember={handleDeleteMember}
       />
 
-       {/* Toast Notification */}
-       <Toast
+      {/* Toast Notification */}
+      <Toast
         onClose={() => setToast({ ...toast, show: false })}
         show={toast.show}
         delay={3000}
@@ -337,7 +328,9 @@ const App = () => {
         bg={toast.variant}
         className="position-fixed bottom-0 end-0 m-3"
       >
-        <Toast.Body  style={{ color: toast.color, fontWeight: "bold" }}>{toast.message}</Toast.Body>
+        <Toast.Body style={{ color: toast.color, fontWeight: "bold" }}>
+          {toast.message}
+        </Toast.Body>
       </Toast>
     </div>
   );
