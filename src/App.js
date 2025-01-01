@@ -22,7 +22,6 @@ const App = () => {
   const [showModalAdd, setShowModalAdd] = useState({ show: false });
   const [showModalEdit, setShowModalEdit] = useState({ show: false, id: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  // const [itemsPerPage] = useState(10);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [paginatedData, setPaginatedData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -267,11 +266,25 @@ const App = () => {
           },
         }}
       />
-    
 
-      {/* Pagination */}
-      {/* <div className="d-flex justify-content-between align-items-center mt-4">
-        <div>Showing {itemsPerPage} entries</div>
+      <div className="d-flex justify-content-between align-items-center mt-4">
+        {/* Dropdown for items per page */}
+        <div className="d-flex align-items-center">
+          <span className="me-2">Show</span>
+          <select
+            className="form-select w-auto"
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+          <span className="ms-2">entries</span>
+        </div>
+
+        {/* Pagination */}
         <nav>
           <ul className="pagination">
             <li className={`page-item ${currentPage === 1 && "disabled"}`}>
@@ -333,89 +346,7 @@ const App = () => {
             </li>
           </ul>
         </nav>
-      </div> */}
-
-      <div className="d-flex justify-content-between align-items-center mt-4">
-  {/* Dropdown for items per page */}
-  <div className="d-flex align-items-center">
-    <span className="me-2">Show</span>
-    <select
-      className="form-select w-auto"
-      value={itemsPerPage}
-      onChange={(e) => setItemsPerPage(Number(e.target.value))}
-    >
-      <option value={5}>5</option>
-      <option value={10}>10</option>
-      <option value={20}>20</option>
-      <option value={50}>50</option>
-    </select>
-    <span className="ms-2">entries</span>
-  </div>
-
-  {/* Pagination */}
-  <nav>
-    <ul className="pagination">
-      <li className={`page-item ${currentPage === 1 && "disabled"}`}>
-        <button
-          className="page-link"
-          onClick={() => handlePageChange(1)}
-          disabled={currentPage === 1}
-        >
-          First
-        </button>
-      </li>
-      <li className={`page-item ${currentPage === 1 && "disabled"}`}>
-        <button
-          className="page-link"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-      </li>
-      {Array.from({ length: totalPages }, (_, index) => (
-        <li
-          key={index + 1}
-          className={`page-item ${currentPage === index + 1 && "active"}`}
-        >
-          <button
-            className="page-link"
-            onClick={() => handlePageChange(index + 1)}
-          >
-            {index + 1}
-          </button>
-        </li>
-      ))}
-      <li
-        className={`page-item ${
-          currentPage === totalPages && "disabled"
-        }`}
-      >
-        <button
-          className="page-link"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </li>
-      <li
-        className={`page-item ${
-          currentPage === totalPages && "disabled"
-        }`}
-      >
-        <button
-          className="page-link"
-          onClick={() => handlePageChange(totalPages)}
-          disabled={currentPage === totalPages}
-        >
-          Last
-        </button>
-      </li>
-    </ul>
-  </nav>
-</div>
-
+      </div>
 
       {/* Add Member Modal */}
       {!!showModalAdd.show && (
