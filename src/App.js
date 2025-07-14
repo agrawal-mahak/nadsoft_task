@@ -167,9 +167,9 @@ const App = () => {
 
   useEffect(() => {
     handleFetchData();
-  }, []);
+  },[]);
 
-  //------------------------------- -------search
+  //--------------------------------------search
   const handleSearch = (event) => {
     setSearchTerm(event.target.value); // Update search term
   };

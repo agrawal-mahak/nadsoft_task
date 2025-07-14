@@ -21,9 +21,10 @@ const AddMemberModal = ({ show, handleClose, handleSubmit, member, add }) => {
         setMemberData(null); // Reset member data for Add mode
       }
     };
-
+  
     fetchMemberData();
   }, [member, add]);
+  
   return (
     <>
       <ToastContainer position="bottom-right" autoClose={3000} />
